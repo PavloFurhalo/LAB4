@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../service';
 import { LoginDto, UserDto } from '../models';
-import { UserAlreadyExists, UserNotFound, WrongSuperpassError } from '../shared';
+import { UserAlreadyExists, UserNotFound} from '../shared';
 
 @Controller({ path: '/' })
 export class UsersController {
@@ -17,7 +17,7 @@ export class UsersController {
   @Post('/users')
   async createUser(@Body() body: UserDto) {
     try {
-      const result = await this.userService.createUser(body, "Customer");
+      const result = await this.userService.createUser(body);
       return result;
     } catch (err) {
       if (err instanceof UserAlreadyExists) {
@@ -26,38 +26,6 @@ export class UsersController {
       throw err;
     }
   }
-
-  @Post('/drivers')
-  async createDriver(@Body() body: UserDto) {
-    try {
-      const result = await this.userService.createUser(body, "Driver");
-      return result;
-    } catch (err) {
-      if (err instanceof UserAlreadyExists) {
-        throw new BadRequestException(err.message);
-      }
-      throw err;
-    }
-  }
-
-  @Post('/admin')
-  async createAdmin(
-    @Req() req,
-    @Body() body: UserDto
-    ) {
-    try {
-      const result = await this.userService.createUser(body, "Admin", req.headers.authorization);
-      return result;
-    } catch (err) {
-      if (err instanceof UserAlreadyExists || err instanceof WrongSuperpassError) {
-        throw new BadRequestException(err.message);
-      }
-      throw err;
-    }
-  }
-
-
-
 
 
   @Post('/login')
@@ -73,8 +41,6 @@ export class UsersController {
     }
   }
 
-  @Get('/')
-  async getAllUsers() {
-    return this.userService.getAllUsers();
-  }
+ 
+
 }

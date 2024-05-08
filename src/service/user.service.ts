@@ -3,10 +3,10 @@ import { LoginDto, UserDto } from '../models';
 import { UserDoc, Users } from '../schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserAlreadyExists, UserNotFound, WrongSuperpassError } from '../shared';
+import { UserAlreadyExists, UserNotFound,ParametersParsingError} from '../shared';
 import { randomUUID } from 'crypto';
 
-let superpass = 'abc123';
+
 
 @Injectable()
 export class UserService {
@@ -15,25 +15,22 @@ export class UserService {
     private readonly userModel: Model<UserDoc>,
   ) {}
 
-  async createUser(body: UserDto, role: String, pass?: String) {
-    if (role == "Admin" && pass != superpass) {
-      throw new WrongSuperpassError('Wrong super password')
-    }
+  async createUser(body: UserDto) {
+    
     const doesExist = await this.userModel.findOne({
-      login: body.login,
-      role: role
+      login: body.email
     });
 
     if (doesExist) {
       throw new UserAlreadyExists(
-        `User with login ${body.login} already exists`,
+        `User with email ${body.email} already exists`,
       );
     }
 
     /**
      * Validation of data
      */
-    const doc = new this.userModel({...body, role: role});
+    const doc = new this.userModel({...body});
     /**
      * Save to db
      */
@@ -44,12 +41,12 @@ export class UserService {
 
   async login(body: LoginDto) {
     const user = await this.userModel.findOne({
-      login: body.login,
+      email: body.email,
       password: body.password,
     });
 
     if (!user) {
-      throw new UserNotFound(`User with login ${body.login} was not found`);
+      throw new UserNotFound(`User with email ${body.email} was not found`);
     }
 
     user.token = randomUUID();
@@ -59,12 +56,5 @@ export class UserService {
     return user.token;
   }
 
-  async getAllUsers() {
-    const users = await this.userModel.find(
-      {},
-      { token: false, password: false, login: false },
-    );
 
-    return users.map((user) => user.toObject());
-  }
 }

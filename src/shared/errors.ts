@@ -27,3 +27,15 @@ export class NotFoundException extends Error {
     super(msg);
   }
 }
+
+export class ParametersParsingError extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
+export class LinkExpiredError extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
